@@ -1,0 +1,16 @@
+# Donnees brutes d'analyses d'eau : plusieurs dizaines de Go, a telecharger
+# depuis la source officielle plutot qu'a stocker dans GitHub.
+/DATAS/data_eau
+/DATAS/data_eau/**
+
+# Fichiers systeme et caches locaux
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Secrets et fichiers d'environnement
+.env
+.env.*
+!.env.example

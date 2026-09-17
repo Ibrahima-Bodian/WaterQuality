@@ -1,0 +1,519 @@
+\documentclass[a4paper,11pt]{article}
+
+% ================================================================
+%  Document de cadrage — Phase 1 : Besoins utilisateurs
+%  Projet Data Science en Santé Mondiale 2026-2027
+%  Qualité de l'eau du robinet et pression agricole en France
+% ================================================================
+
+% ================================================================
+%  Encodage & langue
+% ================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ================================================================
+%  Mise en page
+% ================================================================
+\usepackage[a4paper,margin=2.3cm,top=2.5cm,bottom=2.8cm]{geometry}
+\usepackage{graphicx}
+\usepackage[table]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{positioning,calc}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{setspace}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\setlist[itemize,1]{label={\textcolor{utblue}{$\bullet$}}, leftmargin=1.4em}
+\setlist[itemize,2]{label={\textcolor{watercyan}{$\circ$}}, leftmargin=1.4em}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{lettrine}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+% ================================================================
+%  Hyperliens
+% ================================================================
+\usepackage{xurl}
+\usepackage{hyperref}
+
+% ================================================================
+%  PALETTE — Tons eau / environnement
+% ================================================================
+\definecolor{utblue}{RGB}{0,43,92}            % bleu profond principal
+\definecolor{utbluelight}{RGB}{230,238,247}   % fond léger bleu
+\definecolor{watercyan}{RGB}{15,148,168}       % cyan eau (accent)
+\definecolor{envgreen}{RGB}{34,102,68}         % vert environnement
+\definecolor{envlight}{RGB}{232,243,237}       % fond léger vert
+\definecolor{orangeacc}{RGB}{199,125,20}       % orange accent
+\definecolor{orangelight}{RGB}{251,241,226}    % fond léger orange
+\definecolor{redacc}{RGB}{168,52,52}           % rouge alerte
+\definecolor{redlight}{RGB}{245,228,228}       % fond léger rouge
+\definecolor{txtdark}{RGB}{28,38,46}           % texte principal
+\definecolor{txtgrey}{RGB}{90,102,112}         % texte secondaire
+\definecolor{rulegrey}{RGB}{213,220,222}       % filets
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=utblue,
+  urlcolor=watercyan,
+  citecolor=utblue,
+  pdftitle={Phase 1 — Qualité de l'eau du robinet et pression agricole},
+  pdfauthor={Groupe DS4SC},
+  pdfsubject={Projet Data Science en Santé Mondiale 2026-2027}
+}
+
+% ================================================================
+%  Typographie : styles des titres
+% ================================================================
+\titleformat{\section}
+  {\color{utblue}\Large\bfseries\sffamily}
+  {\thesection.}{0.6em}{}
+  [\vspace{-0.4em}{\color{watercyan}\rule{4cm}{1.5pt}}]
+
+\titleformat{\subsection}
+  {\color{envgreen}\large\bfseries\sffamily}
+  {\thesubsection}{0.6em}{}
+
+\titleformat{\subsubsection}
+  {\color{txtdark}\normalsize\bfseries\sffamily}
+  {}{0em}{}
+
+\titlespacing*{\section}{0pt}{1.6em}{0.9em}
+\titlespacing*{\subsection}{0pt}{1.2em}{0.6em}
+\titlespacing*{\subsubsection}{0pt}{0.8em}{0.3em}
+
+% ================================================================
+%  Interlignage & paragraphes
+% ================================================================
+\linespread{1.08}
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}
+
+% ================================================================
+%  Sommaire coloré
+% ================================================================
+\addto\captionsfrench{%
+  \renewcommand{\contentsname}{\color{utblue}Sommaire}%
+}
+\renewcommand{\cftsecfont}{\bfseries\color{utblue}}
+\renewcommand{\cftsecpagefont}{\bfseries\color{utblue}}
+\renewcommand{\cftsubsecfont}{\color{envgreen}}
+\renewcommand{\cftsubsecpagefont}{\color{envgreen}}
+\renewcommand{\cftdotsep}{2}
+\setlength{\cftbeforesecskip}{0.8em}
+
+% ================================================================
+%  En-têtes / pieds de page
+% ================================================================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\color{txtgrey}\itshape Projet Data Science - Qualité de l'eau}
+\fancyhead[R]{\footnotesize\color{txtgrey}\itshape M1 DS4SC \textbullet\ 2026-2027}
+\fancyfoot[L]{\footnotesize\color{txtgrey}Université de Tours}
+\fancyfoot[R]{\footnotesize\color{txtgrey}\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{rulegrey}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+
+% ================================================================
+%  ENCADRÉS PERSONNALISÉS
+% ================================================================
+
+% Encadré "Thème retenu"
+\newtcolorbox{themeretenu}[1][]{
+  enhanced, breakable,
+  colback=utbluelight, colframe=utblue,
+  boxrule=0pt, leftrule=4pt,
+  arc=2pt, outer arc=2pt,
+  fonttitle=\bfseries\color{utblue}\sffamily,
+  coltitle=utblue,
+  title={Thème retenu},
+  attach title to upper={\par\medskip},
+  fontupper=\color{txtdark},
+  left=14pt, right=14pt, top=10pt, bottom=10pt,
+  #1
+}
+
+% Encadré "Question d'analyse"
+\newtcolorbox{questionbox}[1]{
+  enhanced, breakable,
+  colback=envlight, colframe=envgreen,
+  boxrule=0pt, leftrule=4pt,
+  arc=2pt, outer arc=2pt,
+  fonttitle=\bfseries\color{envgreen}\sffamily,
+  coltitle=envgreen,
+  title={#1},
+  attach title to upper={\par\medskip},
+  fontupper=\color{txtdark},
+  left=14pt, right=14pt, top=10pt, bottom=10pt,
+}
+
+% Encadré "Source de données"
+\newtcolorbox{sourcebox}[1]{
+  enhanced, breakable,
+  colback=orangelight, colframe=orangeacc,
+  boxrule=0pt, leftrule=4pt,
+  arc=2pt, outer arc=2pt,
+  fonttitle=\bfseries\color{orangeacc}\sffamily,
+  coltitle=orangeacc,
+  title={#1},
+  attach title to upper={\par\medskip},
+  fontupper=\color{txtdark},
+  left=14pt, right=14pt, top=10pt, bottom=10pt,
+}
+
+% Encadré "Note méthodologique"
+\newtcolorbox{notebox}[1]{
+  enhanced, breakable,
+  colback=redlight, colframe=redacc,
+  boxrule=0pt, leftrule=4pt,
+  arc=2pt, outer arc=2pt,
+  fonttitle=\bfseries\color{redacc}\sffamily,
+  coltitle=redacc,
+  title={#1},
+  attach title to upper={\par\medskip},
+  fontupper=\color{txtdark},
+  left=14pt, right=14pt, top=10pt, bottom=10pt,
+}
+
+% Sous-titre stylé
+\newcommand{\subtitle}[1]{{\color{txtgrey}\itshape #1}\par\medskip}
+
+\begin{document}
+
+% ================================================================
+%  PAGE DE GARDE
+% ================================================================
+\begin{titlepage}
+  \pagestyle{empty}
+
+  % Filets décoratifs haut & bas
+  \begin{tikzpicture}[remember picture, overlay]
+    \fill[utblue] ([yshift=-0.5cm]current page.north west)
+      rectangle ([yshift=-1.5cm]current page.north east);
+    \fill[watercyan] ([yshift=-1.7cm]current page.north west)
+      rectangle ([yshift=-1.75cm]current page.north east);
+    \fill[watercyan] ([yshift=1.7cm]current page.south west)
+      rectangle ([yshift=1.75cm]current page.south east);
+    \fill[utblue] ([yshift=0.5cm]current page.south west)
+      rectangle ([yshift=1.5cm]current page.south east);
+  \end{tikzpicture}
+
+  \vspace*{1.2cm}
+
+  % --- LOGO ---
+  \noindent
+  \includegraphics[height=2.2cm]{img/UnivTours-Logo.png}\hfill
+  \includegraphics[height=3.2cm]{img/water-logo.png}
+
+  \centering
+
+  \vspace{0.6cm}
+
+  {\color{txtgrey}\scshape\normalsize Université de Tours\par}
+  \vspace{0.3em}
+  {\color{txtgrey}\itshape\small Master 1 - Data Science for Societal Challenge (DS4SC)\par}
+
+  \vspace{1.6cm}
+
+  {\color{utblue}\scshape\Large Global Health Data Science Project\par}
+  \vspace{0.4em}
+  {\color{txtgrey}\itshape\normalsize Année 2026-2027\par}
+
+  \vspace{1.4cm}
+
+  % Titre principal
+  {\color{txtdark}\Huge\bfseries Qualité de l'eau du robinet\par}
+  \vspace{0.3em}
+  {\color{watercyan}\LARGE\itshape et pression agricole en France\par}
+
+  \vspace{0.9cm}
+
+  {\color{watercyan}\rule{4cm}{1pt}\par}
+
+  \vspace{0.6cm}
+
+  {\color{txtgrey}\itshape\normalsize
+    Document de cadrage - Phase~1 : Besoins utilisateurs\par}
+
+  \vfill
+
+  % Bloc encadrants / membres
+  \begin{minipage}[t]{0.48\textwidth}
+    \raggedright
+    {\color{utblue}\bfseries\scshape\normalsize Encadrants\par}
+    \vspace{0.2em}
+    {\color{txtdark}\normalsize\bfseries Alexandre Chanson\par}
+    {\color{txtdark}\normalsize\bfseries Veronika Peralta\par}
+    \vspace{0.1em}
+    {\color{txtgrey}\itshape\small Université de Tours\par}
+  \end{minipage}%
+  \hfill
+  \begin{minipage}[t]{0.48\textwidth}
+    \raggedleft
+    {\color{envgreen}\bfseries\scshape\normalsize Membres du groupe\par}
+    \vspace{0.2em}
+    {\color{txtdark}\normalsize Ibrahima BODIAN \par}
+    {\color{txtdark}\normalsize Tima SIDIBE \par}
+    {\color{txtdark}\normalsize Sham M MURSHITH \par}
+    {\color{txtdark}\normalsize Fanta TANGARA\par}
+  \end{minipage}
+
+  \vspace{1.2cm}
+
+\end{titlepage}
+
+% ================================================================
+%  Reprise du style
+% ================================================================
+\pagestyle{fancy}
+
+% ================================================================
+%  SOMMAIRE
+% ================================================================
+\tableofcontents
+\newpage
+
+% ================================================================
+%  1. CONTEXTE
+% ================================================================
+\section{Contexte}
+
+\lettrine[lines=2, findent=2pt, nindent=4pt]{\color{utblue}L}{'accès} à une eau potable de qualité représente un enjeu majeur de santé publique. En France comme dans le reste de l'Europe, la qualité de l'eau du robinet fait l'objet d'un suivi réglementaire rigoureux encadré par la Directive européenne 98/83/CE. Chaque année, les agences régionales de santé réalisent plus de 300~000 prélèvements sur l'ensemble du territoire, couvrant des paramètres microbiologiques, physico-chimiques et radiologiques.
+
+Parallèlement, les pratiques agricoles constituent l'une des premières sources de pression sur la qualité des eaux souterraines et de surface. L'utilisation de pesticides, d'engrais azotés et d'herbicides entraîne un phénomène de lessivage vers les nappes phréatiques, lesquelles alimentent directement les réseaux de distribution d'eau potable. Cette contamination n'est pas uniforme : elle varie fortement selon les régions, les cultures dominantes et l'intensité des pratiques agricoles.
+
+Ce projet s'inscrit dans cette problématique en mobilisant des techniques de data science pour croiser les résultats des contrôles sanitaires de l'eau avec les données d'utilisation de pesticides en agriculture. L'objectif est double : dresser un état des lieux géographique et temporel de la qualité de l'eau du robinet, et mettre en évidence les liens entre pression agricole et contamination de l'eau distribuée.
+
+% ================================================================
+%  2. SOURCES DE DONNÉES
+% ================================================================
+\section{Sources de données}
+
+\subsection{Résultats du contrôle sanitaire de l'eau (SISE-Eaux)}
+
+Le jeu de données principal provient de la base nationale SISE-Eaux du ministère de la Santé. Il contient les résultats officiels des contrôles sanitaires réalisés sur l'eau distribuée, ventilés commune par commune. Chaque prélèvement renseigne la commune concernée, la date d'analyse, le paramètre mesuré (nature chimique, bactériologique ou physique), la valeur mesurée et la limite de qualité réglementaire associée. C'est ce croisement entre valeur observée et seuil réglementaire qui permet de déterminer la conformité ou la non-conformité d'un prélèvement.
+
+\begin{sourcebox}{Source - SISE-Eaux}
+Résultats du contrôle sanitaire de l'eau distribuée commune par commune, publiés par le ministère de la Santé sur la plateforme data.gouv.fr.\par\smallskip
+\url{https://www.data.gouv.fr/datasets/resultats-du-controle-sanitaire-de-leau-distribuee-commune-par-commune}
+\end{sourcebox}
+
+
+\subsection{Utilisation des pesticides en agriculture (Solagro)}
+
+Le second jeu de données est issu du guide méthodologique publié par Solagro, qui cartographie et quantifie l'usage des pesticides dans l'agriculture française pour les années 2020, 2021 et 2022. Ces données permettent de caractériser l'intensité de la pression phytosanitaire à l'échelle départementale, en distinguant les grandes catégories de produits : herbicides, insecticides et fongicides.
+
+\begin{sourcebox}{Source — Solagro}
+Guide méthodologique pour la cartographie de l'usage des pesticides en agriculture française (2020-2022).\par\smallskip
+\url{https://solagro.org/medias/domaines-intervention/agroecologie/Guide_methodologique_-_Carte_sur_l_usage_des_pesticides.pdf}
+\end{sourcebox}
+
+\subsection{Données complémentaires envisagées}
+
+\textbf{Achats de pesticides par code postal} - Des données historiques sur les volumes d'achats de produits phytosanitaires sont disponibles sur data.gouv.fr. Elles offrent un complément intéressant aux données d'utilisation effective de Solagro, même si elles concernent des achats et non l'usage réel.
+
+{\color{txtgrey}\itshape\small \url{https://www.data.gouv.fr/datasets/achats-de-pesticides-par-code-postal-1}}
+
+\medskip
+
+\textbf{Données anglaises (DEFRA)} - Le gouvernement britannique met à disposition des données similaires via le Water Quality Explorer. Ces données pourraient servir de base à une comparaison transfrontalière, mais cette piste reste optionnelle compte tenu de la charge de travail.
+
+{\color{txtgrey}\itshape\small \url{https://environment.data.gov.uk/water-quality}}
+
+\begin{notebox}{Note sur le package de données}
+Les données fournies sont disponibles sous forme d'archive ZIP unique sur la plateforme CELENE.
+\end{notebox}
+
+% ================================================================
+%  3. THÈME RETENU
+% ================================================================
+\section{Thème retenu}
+
+\begin{themeretenu}
+\begin{center}
+{\large\bfseries\color{utblue} « Conformité sanitaire de l'eau du robinet et pression agricole :\par
+\medskip
+cartographie, corrélations et évolutions sur le territoire français »}
+\end{center}
+\end{themeretenu}
+
+Notre approche consiste à exploiter conjointement les résultats des contrôles sanitaires de l'eau (SISE-Eaux) et les données d'utilisation des pesticides (Solagro) pour répondre à une question centrale : la pression agricole se traduit-elle par une dégradation mesurable de la qualité de l'eau du robinet~? Pour y répondre, nous avons structuré notre analyse autour de quatre axes complémentaires, chacun pris en charge par un membre du groupe.
+
+
+% ================================================================
+%  4. BESOINS UTILISATEURS
+% ================================================================
+\section{Besoins utilisateurs}
+
+On a identifié huit questions, réparties en quatre axes. Chaque membre du groupe prend en charge un axe avec deux questions.
+
+Pour chaque question, on procède en deux temps. D'abord une phase \textbf{data analyse} : on explore les données, on regarde les distributions, on produit des visuels pour comprendre ce qu'on a sous les yeux. Ensuite une phase \textbf{data science} : on applique une méthode statistique ou de machine learning pour vérifier si ce qu'on observe tient la route ou pas.
+
+% --- AXE 1 ---
+\subsection{Axe 1 - Cartographie de la non-conformité}
+
+\textbf{Responsable :} {\itshape Sham}
+
+L'idée ici c'est de dresser une photographie géographique de la qualité de l'eau en France. On veut savoir où ça va et où ça ne va pas. On s'appuie sur les fichiers \texttt{DIS\_PLV} (les prélèvements, avec la conformité chimique et bactériologique) et sur les fichiers \texttt{DIS\_RESULT} (les résultats détaillés par paramètre).
+
+\begin{questionbox}{Question 1 - Quels départements concentrent le plus de non-conformités~?}
+\textbf{Data analyse.} Pour chaque département, on compte le nombre de prélèvements non conformes (valeur \texttt{N} dans les champs \texttt{plvconformitechimique} et \texttt{plvconformitebacterio}) et on le rapporte au total. On produit une carte choroplèthe dans Tableau et un tableau des 10~départements les plus touchés, avec les volumes pour donner du contexte.\par\smallskip
+\textbf{Data science.} On classe les départements en quartiles de risque. On vérifie si la distribution des taux suit une loi normale (test de Shapiro-Wilk) pour savoir quelles méthodes statistiques utiliser par la suite.
+\end{questionbox}
+
+\begin{questionbox}{Question 2 - Quels paramètres chimiques dépassent le plus souvent les seuils~?}
+\textbf{Data analyse.} À partir de \texttt{DIS\_RESULT}, on repère les paramètres dont la valeur mesurée (\texttt{valtraduite}) dépasse la limite réglementaire (\texttt{limitequal} ou \texttt{refqual}). On classe par grandes familles : pesticides (atrazine, glyphosate, simazine, métolachlore\ldots), nitrates, bactériologie, autres. On fait un histogramme des dépassements et un diagramme par famille.\par\smallskip
+\textbf{Data science.} On fait une analyse de Pareto pour voir quels paramètres sont responsables de la majorité des non-conformités. On regarde aussi si certains paramètres apparaissent souvent ensemble (co-occurrence) pour identifier des profils de contamination.
+\end{questionbox}
+
+% --- AXE 2 ---
+\subsection{Axe 2 - Corrélation avec la pression agricole}
+
+\textbf{Responsable :} {\itshape Ibrahima}
+
+C'est l'axe central du projet : est-ce que les départements qui utilisent le plus de pesticides sont aussi ceux où l'eau est le moins conforme~? On croise les données d'eau avec les données Solagro. La jointure se fait sur le code département, après avoir harmonisé les codes INSEE entre les deux sources.
+
+\begin{questionbox}{Question 3 - Y a-t-il un lien entre l'usage de pesticides (IFT) et la non-conformité de l'eau~?}
+\textbf{Data analyse.} On met côte à côte deux cartes : celle des taux de non-conformité chimique par département (axe~1) et celle de l'IFT moyen par département (colonne \texttt{ift\_t} dans Solagro). On regarde visuellement si les zones se recoupent. On complète avec un scatter plot département par département.\par\smallskip
+\textbf{Data science.} On calcule un coefficient de corrélation de Spearman entre l'IFT et le taux de non-conformité, avec un test de significativité. On utilise Spearman plutôt que Pearson parce qu'on ne s'attend pas à des distributions normales sur ces données.
+\end{questionbox}
+
+\begin{questionbox}{Question 4 - Les herbicides sont-ils plus liés aux non-conformités que les autres produits~?}
+\textbf{Data analyse.} Solagro sépare l'IFT herbicides (\texttt{ift\_h}) et l'IFT hors herbicides (\texttt{ift\_t\_hh}). On fait des graphiques comparatifs par famille et par département. Si \texttt{DIS\_RESULT} le permet, on regarde quelles substances précises sont retrouvées dans l'eau et à quelle fréquence.\par\smallskip
+\textbf{Data science.} On calcule une corrélation de Spearman séparée pour chaque famille (herbicides d'un côté, insecticides/fongicides de l'autre) avec le taux de non-conformité. Comparer les deux coefficients nous dira quelle famille pèse le plus.
+\end{questionbox}
+
+% --- AXE 3 ---
+\subsection{Axe 3 - Évolution temporelle (2020-2022)}
+
+\textbf{Responsable :} {\itshape Fatoumata}
+
+On a des données d'eau sur plusieurs années (2016 à 2025) et des données pesticides pour 2020 et 2022. Ça permet de voir si la qualité de l'eau s'améliore ou se dégrade, et surtout de vérifier si les changements observés sont réels ou juste des fluctuations.
+
+\begin{questionbox}{Question 5 - La qualité de l'eau a-t-elle bougé entre 2020 et 2022~?}
+\textbf{Data analyse.} On calcule le taux de non-conformité année par année, au national et par département. On trace des courbes d'évolution et des cartes comparatives côte à côte. On sort un tableau des départements qui se sont le plus améliorés ou dégradés.\par\smallskip
+\textbf{Data science.} On applique un test de Mann-Whitney pour vérifier si la différence entre 2020 et 2022 est statistiquement significative, et pas juste un effet de hasard.
+\end{questionbox}
+
+\begin{questionbox}{Question 6 - Quand l'usage de pesticides baisse, l'eau s'améliore-t-elle~?}
+\textbf{Data analyse.} On croise, département par département, la variation de l'IFT entre 2020 et 2022 (colonne \texttt{ift\_t\_hbc\_dif} dans Solagro) avec la variation du taux de non-conformité sur la même période. Un scatter plot permet de voir visuellement si les deux bougent ensemble.\par\smallskip
+\textbf{Data science.} On ajuste une régression linéaire simple pour modéliser le lien entre la variation de l'IFT et la variation de la conformité. On regarde le $R^2$ pour voir quelle part de l'évolution est expliquée, et les résidus pour repérer les départements qui ne suivent pas la tendance.
+\end{questionbox}
+
+% --- AXE 4 ---
+\subsection{Axe 4 - Profil des zones à risque}
+
+\textbf{Responsable :} {\itshape Fanta}
+
+Ici on descend à l'échelle de la commune. L'objectif est d'aller plus loin que la simple comparaison pour essayer de regrouper les communes par profil et, si possible, prédire lesquelles risquent d'avoir une eau non conforme. Les données Solagro donnent pour chaque commune la part de surface agricole (\texttt{p\_sau}), la part de bio (\texttt{p\_bio}), la population et la culture dominante.
+
+\begin{questionbox}{Question 7 - Peut-on regrouper les communes en profils de risque~?}
+\textbf{Data analyse.} On construit un jeu de données communal en croisant les données d'eau (taux de non-conformité par commune) avec les indicateurs Solagro. On compare les communes conformes et non conformes avec des histogrammes et des box plots sur chaque variable.\par\smallskip
+\textbf{Data science.} On applique un clustering K-means sur les variables standardisées pour regrouper les communes en profils types. On utilise la méthode du coude pour choisir le bon nombre de clusters, puis on caractérise chaque groupe par ses valeurs moyennes.
+\end{questionbox}
+
+\begin{questionbox}{Question 8 - Peut-on prédire si une commune aura de l'eau non conforme~?}
+\textbf{Data analyse.} On prépare une variable binaire : commune «~à risque~» (au moins un prélèvement non conforme) ou «~conforme~». On fait des tableaux croisés et des graphiques pour voir quels facteurs (IFT, SAU, bio, culture dominante) semblent les plus discriminants.\par\smallskip
+\textbf{Data science.} On construit un modèle de régression logistique pour prédire la probabilité qu'une commune soit à risque. On évalue le modèle par validation croisée et on mesure les performances avec la matrice de confusion et la courbe ROC.
+\end{questionbox}
+
+% ================================================================
+%  5. OUTILS ET MÉTHODOLOGIE
+% ================================================================
+\section{Outils et méthodologie}
+
+\subsection{Données et préparation}
+
+Les données SISE-Eaux sont structurées en trois fichiers par année (de 2016 à 2025) :
+
+\begin{itemize}[itemsep=2pt]
+  \item \texttt{DIS\_COM\_UDI} : table de liaison entre communes (code INSEE) et réseaux de distribution.
+  \item \texttt{DIS\_PLV} : les prélèvements avec la conformité bactériologique et chimique (C, N, S, D). Environ 400~000 lignes par année, couvrant toute la France. C'est le fichier qu'on utilisera le plus.
+  \item \texttt{DIS\_RESULT} : les résultats détaillés par paramètre (928 paramètres, dont les pesticides, nitrates, métaux). Ce fichier dépasse le million de lignes par année.
+\end{itemize}
+
+Les données Solagro couvrent 2020, 2021 et 2022, commune par commune : IFT total et par famille, SAU, part de bio, population, culture dominante. La jointure avec les données d'eau se fait sur le code département.
+
+\subsection{Outils d'analyse}
+
+\textbf{Microsoft Excel / Power Query} - Import, nettoyage et préparation des données. Jointures entre les sources, calcul des indicateurs, harmonisation des codes INSEE.
+
+\textbf{Tableau} - Cartes choroplèthes, nuages de points, courbes d'évolution, tableaux de bord. C'est l'outil de restitution visuelle.
+
+\textbf{KNIME} - Construction des pipelines d'analyse : clustering K-means, régression logistique, préparation des données volumineuses. KNIME permet de faire du machine learning sans coder, ce qui facilite le travail en groupe.
+
+\textbf{RStudio} - Tests statistiques (Spearman, Mann-Whitney), régressions, et traitement des fichiers volumineux comme \texttt{DIS\_RESULT} qui dépassent la capacité d'Excel.
+
+\textbf{DataClean} - Nettoyage et standardisation des données en amont des analyses.
+
+\begin{notebox}{Granularité et période retenues}
+On travaille principalement au niveau \textbf{département} pour les axes 1 à 3. L'axe~4 descend à la \textbf{commune} pour le clustering et la régression logistique. La période prioritaire couvre \textbf{2020 à 2022}, pour lesquelles les données Solagro et SISE-Eaux se recoupent. Les données d'eau 2016-2025 pourront servir pour l'analyse de tendance longue dans l'axe~3.
+\end{notebox}
+
+\subsection{Démarche par question}
+
+Chaque question sera traitée en quatre étapes :
+
+\begin{enumerate}[itemsep=3pt]
+  \item \textbf{Nettoyage et préparation} : import, harmonisation des codes, gestion des valeurs manquantes, jointures.
+  \item \textbf{Exploration et description} (\textit{data analyse}) : statistiques descriptives, distributions, visualisations - pour comprendre ce qu'on a avant de modéliser.
+  \item \textbf{Analyse et modélisation} (\textit{data science}) : tests statistiques, corrélations, régressions, clustering - pour valider et prédire.
+  \item \textbf{Interprétation et restitution} : synthèse, limites, recommandations. Les visuels finaux seront faits dans Tableau.
+\end{enumerate}
+
+\subsection{Limites anticipées}
+
+On a déjà identifié quelques difficultés qu'on s'attend à rencontrer.
+
+La première concerne le volume des données. Le fichier \texttt{DIS\_RESULT} dépasse la limite d'Excel par année. On passera par RStudio et KNIME pour le traiter.
+
+La deuxième concerne les codes INSEE. Ils ne sont pas au même format dans les fichiers SISE-Eaux et dans les données Solagro. Cette harmonisation devra être faite proprement au moment du nettoyage.
+
+La troisième est liée à la qualité des données brutes. Les fichiers ne sont pas nettoyés, donc on s'attend à des valeurs manquantes et des codes mal renseignés. On ne pourra pas mesurer l'ampleur du problème avant d'avoir ouvert les fichiers complets.
+
+% ================================================================
+%  6. RÉPARTITION DU TRAVAIL
+% ================================================================
+\section{Répartition du travail}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.35}
+\rowcolors{2}{envlight}{white}
+\begin{tabularx}{\textwidth}{@{}p{2.2cm} X p{2.4cm} p{2.4cm} p{2.8cm}@{}}
+\toprule
+\rowcolor{utblue}
+\textcolor{white}{\bfseries Membre} &
+\textcolor{white}{\bfseries Axe} &
+\textcolor{white}{\bfseries Questions} &
+\textcolor{white}{\bfseries Data analyse} &
+\textcolor{white}{\bfseries Data science} \\
+\midrule
+{Sham} & Cartographie & Q1 \& Q2 & Cartes, tableaux de synthèse & Quartiles, Pareto \\
+{Ibrahima} & Corrélation agricole & Q3 \& Q4 & Scatter plots, cartes croisées & Spearman \\
+{Fatoumata} & Évolution temporelle & Q5 \& Q6 & Courbes, comparaisons & Mann-Whitney, régression \\
+{Fanta} & Zones à risque & Q7 \& Q8 & Box plots, tableaux croisés & K-means, rég.\ logistique \\
+\bottomrule
+\end{tabularx}
+\caption{Répartition des axes, questions et méthodes par membre du groupe.}
+\label{tab:repartition}
+\end{table}
+
+\vspace{2em}
+\begin{center}
+  \color{watercyan}\rule{6cm}{1pt}\par\vspace{0.4em}
+  \color{txtgrey}\itshape\small M1 DS4SC - Université de Tours\par
+  \color{txtgrey}\itshape\small Projet Data Science en Santé Mondiale 2026-2027
+\end{center}
+
+\end{document}
