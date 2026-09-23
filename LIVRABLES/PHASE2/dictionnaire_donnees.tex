@@ -1,0 +1,138 @@
+% Genere par LIVRABLES/PHASE2/profilage_duckdb.R --- ne pas editer a la main
+\section{Dictionnaire de donnees}
+
+\subsection{SISE-Eaux --- DIS\_COM\_UDI (liaison commune / UDI)}
+\noindent\textit{Volumetrie mesuree : 495 059 lignes, 6 colonnes.}\par\smallskip
+
+{\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}p{2.6cm}p{3.5cm}p{1.9cm}p{3.1cm}p{1.1cm}p{1.3cm}p{0.9cm}@{}}
+\toprule
+\textbf{Colonne} & \textbf{Libelle} & \textbf{Type cible} & \textbf{Role dans le DW} & \textbf{\% manq.} & \textbf{Distinct} & \textbf{PQ} \\
+\midrule \endfirsthead
+\toprule \textbf{Colonne} & \textbf{Libelle} & \textbf{Type cible} & \textbf{Role dans le DW} & \textbf{\% manq.} & \textbf{Distinct} & \textbf{PQ} \\ \midrule \endhead
+\bottomrule \endfoot
+\texttt{inseecommune} & Code INSEE de la commune desservie par le reseau & \texttt{VARCHAR(5)} & Cle etrangere -> DIM\_GEOGRAPHIE & 0.00 & 34 944 & PQ-05 \\
+\texttt{nomcommune} & Nom de la commune & \texttt{VARCHAR(50)} & Attribut degrade de DIM\_GEOGRAPHIE & 0.00 & 32 694 & PQ-09 \\
+\texttt{quartier} & Quartier ou zone desservie & \texttt{VARCHAR(80)} & Rejete (qualite insuffisante) & 0.00 & 17 183 & PQ-09 \\
+\texttt{cdreseau} & Code de l unite de distribution (UDI) & \texttt{VARCHAR(9)} & Cle etrangere -> DIM\_RESEAU\_UDI & 0.00 & 24 373 & --- \\
+\texttt{nomreseau} & Libelle de l UDI & \texttt{VARCHAR(80)} & Attribut de DIM\_RESEAU\_UDI & 0.00 & 25 849 & PQ-10 \\
+\texttt{debutalim} & Date de debut d alimentation de la commune par l UDI & \texttt{DATE} & Attribut de la table pont & 0.00 & 2 209 & PQ-06 \\
+\end{longtable}}
+
+\subsection{SISE-Eaux --- DIS\_PLV (prelevements)}
+\noindent\textit{Volumetrie mesuree : 4 060 859 lignes, 18 colonnes.}\par\smallskip
+
+{\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}p{2.6cm}p{3.5cm}p{1.9cm}p{3.1cm}p{1.1cm}p{1.3cm}p{0.9cm}@{}}
+\toprule
+\textbf{Colonne} & \textbf{Libelle} & \textbf{Type cible} & \textbf{Role dans le DW} & \textbf{\% manq.} & \textbf{Distinct} & \textbf{PQ} \\
+\midrule \endfirsthead
+\toprule \textbf{Colonne} & \textbf{Libelle} & \textbf{Type cible} & \textbf{Role dans le DW} & \textbf{\% manq.} & \textbf{Distinct} & \textbf{PQ} \\ \midrule \endhead
+\bottomrule \endfoot
+\texttt{cddept} & Code departement du prelevement & \texttt{VARCHAR(3)} & Cle etrangere -> DIM\_GEOGRAPHIE (niveau departement) & 0.00 & 101 & PQ-05 \\
+\texttt{cdreseau} & Code de l UDI prelevee & \texttt{VARCHAR(9)} & Cle etrangere -> DIM\_RESEAU\_UDI & 0.00 & 24 356 & --- \\
+\texttt{inseecommuneprinc} & Code INSEE de la commune principale de l UDI & \texttt{VARCHAR(5)} & Cle etrangere -> DIM\_GEOGRAPHIE & 0.00 & 34 915 & PQ-07 \\
+\texttt{nomcommuneprinc} & Nom de la commune principale & \texttt{VARCHAR(50)} & Attribut degrade & 0.00 & 32 669 & PQ-09 \\
+\texttt{cdreseauamont} & Code du reseau amont (production ou transport) & \texttt{VARCHAR(9)} & Attribut de la table pont RESEAU\_AMONT & 52.76 & 23 791 & PQ-02 \\
+\texttt{nomreseauamont} & Libelle du reseau amont & \texttt{VARCHAR(70)} & Attribut de la table pont RESEAU\_AMONT & 52.76 & 24 353 & PQ-10 \\
+\texttt{pourcentdebit} & Part du debit apportee par le reseau amont & \texttt{DECIMAL(5,2)} & Poids de l arc multiple RESEAU\_AMONT & 56.04 & 101 & PQ-03 \\
+\texttt{referenceprel} & Identifiant national du prelevement & \texttt{VARCHAR(11)} & CLE DEGENEREE du fait PRELEVEMENT & 0.00 & 2 834 678 & PQ-01 \\
+\texttt{dateprel} & Date du prelevement & \texttt{DATE} & Cle etrangere -> DIM\_TEMPS & 0.00 & 2 811 & --- \\
+\texttt{heureprel} & Heure du prelevement & \texttt{TIME} & Attribut de DIM\_TEMPS (optionnel) & 0.14 & 1 092 & PQ-04 \\
+\texttt{conclusionprel} & Conclusion sanitaire redigee par l ARS & \texttt{TEXT} & Source de DIM\_CONCLUSION (apres classification) & 0.00 & 140 609 & PQ-08 \\
+\texttt{ugelib} & Libelle de l unite de gestion et d exploitation & \texttt{VARCHAR(40)} & Attribut de DIM\_RESEAU\_UDI & 0.00 & 11 077 & PQ-10 \\
+\texttt{distrlib} & Libelle du distributeur & \texttt{VARCHAR(70)} & Niveau hierarchique de DIM\_RESEAU\_UDI & 0.00 & 7 047 & PQ-10 \\
+\texttt{moalib} & Libelle du maitre d ouvrage & \texttt{VARCHAR(70)} & Niveau hierarchique de DIM\_RESEAU\_UDI & 0.00 & 8 804 & PQ-10 \\
+\texttt{plvconformitebacterio} & Conformite aux limites de qualite bacteriologiques & \texttt{CHAR(1)} & MESURE (flag) du fait PRELEVEMENT & 0.00 & 3 & PQ-11 \\
+\texttt{plvconformitechimique} & Conformite aux limites de qualite chimiques & \texttt{CHAR(1)} & MESURE (flag) du fait PRELEVEMENT & 0.00 & 4 & PQ-11 \\
+\texttt{plvconformitereferencebact} & Conformite aux references de qualite bacteriologiques & \texttt{CHAR(1)} & MESURE (flag) du fait PRELEVEMENT & 0.00 & 3 & PQ-11 \\
+\texttt{plvconformitereferencechim} & Conformite aux references de qualite chimiques & \texttt{CHAR(1)} & MESURE (flag) du fait PRELEVEMENT & 0.00 & 4 & PQ-11 \\
+\end{longtable}}
+
+\subsection{SISE-Eaux --- DIS\_RESULT (resultats d'analyse)}
+\noindent\textit{Volumetrie mesuree : 125 167 285 lignes, 17 colonnes.}\par\smallskip
+
+{\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}p{2.6cm}p{3.5cm}p{1.9cm}p{3.1cm}p{1.1cm}p{1.3cm}p{0.9cm}@{}}
+\toprule
+\textbf{Colonne} & \textbf{Libelle} & \textbf{Type cible} & \textbf{Role dans le DW} & \textbf{\% manq.} & \textbf{Distinct} & \textbf{PQ} \\
+\midrule \endfirsthead
+\toprule \textbf{Colonne} & \textbf{Libelle} & \textbf{Type cible} & \textbf{Role dans le DW} & \textbf{\% manq.} & \textbf{Distinct} & \textbf{PQ} \\ \midrule \endhead
+\bottomrule \endfoot
+\texttt{cddept} & Code departement & \texttt{VARCHAR(3)} & Cle etrangere -> DIM\_GEOGRAPHIE & 0.00 & $\sim$88 & PQ-05 \\
+\texttt{referenceprel} & Identifiant du prelevement parent & \texttt{VARCHAR(11)} & Cle etrangere -> fait PRELEVEMENT & 0.00 & $\sim$4 166 649 & PQ-01 \\
+\texttt{cdparametresiseeaux} & Code SISE-Eaux du parametre & \texttt{VARCHAR(9)} & CLE de DIM\_PARAMETRE & 0.00 & $\sim$1 769 & --- \\
+\texttt{cdparametre} & Code parametre du referentiel national & \texttt{VARCHAR(5)} & Attribut de DIM\_PARAMETRE & 0.10 & $\sim$1 628 & PQ-12 \\
+\texttt{libmajparametre} & Libelle du parametre en majuscules & \texttt{VARCHAR(70)} & Attribut de DIM\_PARAMETRE & 0.00 & $\sim$1 628 & --- \\
+\texttt{libminparametre} & Libelle du parametre & \texttt{VARCHAR(70)} & Attribut de DIM\_PARAMETRE & 0.00 & $\sim$1 914 & PQ-10 \\
+\texttt{libwebparametre} & Libelle web du parametre & \texttt{VARCHAR(35)} & Rejete (colonne vide) & 100.00 & $\sim$2 & PQ-12 \\
+\texttt{qualitparam} & Indicateur de parametre qualitatif & \texttt{CHAR(1)} & Attribut de DIM\_PARAMETRE & 0.00 & $\sim$2 & PQ-13 \\
+\texttt{insituana} & Analyse realisee in situ (T) ou en laboratoire (L) & \texttt{CHAR(1)} & Attribut de DIM\_PARAMETRE & 0.00 & $\sim$2 & --- \\
+\texttt{rqana} & Resultat brut rendu par le laboratoire & \texttt{VARCHAR(35)} & Attribut technique du fait ANALYSE & 0.08 & $\sim$48 773 & PQ-14 \\
+\texttt{cdunitereferencesiseeaux} & Unite de mesure SISE-Eaux & \texttt{VARCHAR(24)} & Attribut de DIM\_PARAMETRE & 0.00 & $\sim$72 & PQ-10 \\
+\texttt{cdunitereference} & Code unite du referentiel national & \texttt{VARCHAR(3)} & Attribut de DIM\_PARAMETRE & 0.00 & $\sim$63 & --- \\
+\texttt{limitequal} & Limite de qualite reglementaire (seuil opposable) & \texttt{VARCHAR(28)} & Source des attributs de DIM\_SEUIL & 43.70 & $\sim$42 & PQ-15 \\
+\texttt{refqual} & Reference de qualite (seuil indicatif) & \texttt{VARCHAR(21)} & Source des attributs de DIM\_SEUIL & 80.28 & $\sim$43 & PQ-15 \\
+\texttt{valtraduite} & Valeur numerique normalisee dans l unite de reference & \texttt{DECIMAL(18,6)} & MESURE du fait ANALYSE & 0.83 & $\sim$30 804 & PQ-16 \\
+\texttt{casparam} & Numero CAS de la substance & \texttt{VARCHAR(12)} & Attribut de DIM\_PARAMETRE & 42.01 & $\sim$994 & --- \\
+\texttt{referenceanl} & Identifiant de l analyse (laboratoire) & \texttt{VARCHAR(11)} & Cle degeneree du fait ANALYSE & 11.73 & $\sim$3 302 727 & PQ-12 \\
+\end{longtable}}
+
+\subsection{Solagro --- consolidated\_ift (pression phytosanitaire)}
+\noindent\textit{Volumetrie mesuree : 89 199 lignes, 46 colonnes.}\par\smallskip
+
+{\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}p{2.6cm}p{3.5cm}p{1.9cm}p{3.1cm}p{1.1cm}p{1.3cm}p{0.9cm}@{}}
+\toprule
+\textbf{Colonne} & \textbf{Libelle} & \textbf{Type cible} & \textbf{Role dans le DW} & \textbf{\% manq.} & \textbf{Distinct} & \textbf{PQ} \\
+\midrule \endfirsthead
+\toprule \textbf{Colonne} & \textbf{Libelle} & \textbf{Type cible} & \textbf{Role dans le DW} & \textbf{\% manq.} & \textbf{Distinct} & \textbf{PQ} \\ \midrule \endhead
+\bottomrule \endfoot
+\texttt{insee\_com} & Code INSEE de la commune & \texttt{VARCHAR(5)} & Cle etrangere -> DIM\_GEOGRAPHIE & 0.00 & 34 806 & PQ-05 \\
+\texttt{year} & Annee de reference (2020, 2021, 2022) & \texttt{SMALLINT} & Cle etrangere -> DIM\_TEMPS (niveau annee) & 0.00 & 3 & PQ-17 \\
+\texttt{nom} & Nom de la commune & \texttt{VARCHAR(50)} & Attribut degrade & 14.04 & 26 828 & PQ-09 \\
+\texttt{nom\_m} & Nom de la commune en majuscules & \texttt{VARCHAR(50)} & Rejete (redondant) & 14.04 & 26 782 & PQ-12 \\
+\texttt{insee\_dep} & Code departement & \texttt{VARCHAR(2)} & Niveau DIM\_GEOGRAPHIE & 0.00 & 96 & PQ-18 \\
+\texttt{nom\_dep} & Nom du departement & \texttt{VARCHAR(30)} & Attribut de DIM\_GEOGRAPHIE & 0.81 & 94 & --- \\
+\texttt{insee\_reg} & Code region (decoupage post-2016) & \texttt{VARCHAR(2)} & Niveau DIM\_GEOGRAPHIE & 14.04 & 12 & --- \\
+\texttt{nom\_reg} & Nom de la region & \texttt{VARCHAR(30)} & Attribut de DIM\_GEOGRAPHIE & 14.04 & 12 & --- \\
+\texttt{insee\_reg\_ancien} & Code region (decoupage pre-2016) & \texttt{VARCHAR(2)} & Attribut historique de DIM\_GEOGRAPHIE & 20.33 & 20 & PQ-19 \\
+\texttt{siren\_epci} & Code SIREN de l EPCI de rattachement & \texttt{VARCHAR(9)} & Niveau optionnel de DIM\_GEOGRAPHIE & 14.04 & 1 088 & PQ-06 \\
+\texttt{code\_bv} & Code du bassin de vie & \texttt{VARCHAR(3)} & Niveau optionnel de DIM\_GEOGRAPHIE & 20.33 & 21 & --- \\
+\texttt{population} & Population communale & \texttt{INTEGER} & MESURE du fait PRESSION\_AGRICOLE & 14.42 & 5 071 & --- \\
+\texttt{statut} & Statut administratif de la commune & \texttt{VARCHAR(20)} & Attribut de DIM\_GEOGRAPHIE & 14.42 & 5 & PQ-06 \\
+\texttt{insee\_can} & Code canton & \texttt{VARCHAR(2)} & Rejete (qualite insuffisante) & 14.42 & 49 & PQ-06 \\
+\texttt{insee\_arr} & Code arrondissement & \texttt{VARCHAR(2)} & Rejete (granularite non utilisee) & 14.42 & 9 & --- \\
+\texttt{surf\_com\_ha} & Surface communale totale en hectares & \texttt{DECIMAL(12,4)} & MESURE du fait PRESSION\_AGRICOLE & 20.33 & 28 579 & --- \\
+\texttt{sau} & Surface agricole utile en hectares & \texttt{DECIMAL(12,4)} & MESURE du fait PRESSION\_AGRICOLE & 21.18 & 68 454 & PQ-20 \\
+\texttt{sau\_bio\_0} & Surface agricole conduite en agriculture biologique (ha) & \texttt{DECIMAL(12,4)} & MESURE du fait PRESSION\_AGRICOLE & 43.26 & 25 421 & PQ-20 \\
+\texttt{p\_sau} & Part de la SAU dans la surface communale (pourcent) & \texttt{DECIMAL(6,3)} & MESURE du fait PRESSION\_AGRICOLE & 21.18 & 69 873 & PQ-20 \\
+\texttt{p\_bio} & Part de la SAU en agriculture biologique (pourcent) & \texttt{DECIMAL(6,3)} & MESURE du fait PRESSION\_AGRICOLE & 43.26 & 50 530 & PQ-20 \\
+\texttt{p\_bc} & Part des traitements relevant du biocontrole (pourcent) & \texttt{DECIMAL(6,3)} & MESURE du fait PRESSION\_AGRICOLE & 23.94 & 59 371 & PQ-21 \\
+\texttt{ift\_t} & Indice de frequence de traitement total & \texttt{DECIMAL(8,4)} & MESURE du fait PRESSION\_AGRICOLE & 21.18 & 67 822 & PQ-20 \\
+\texttt{ift\_t\_hbc} & IFT total hors produits de biocontrole & \texttt{DECIMAL(8,4)} & MESURE du fait PRESSION\_AGRICOLE & 21.18 & 67 820 & PQ-21 \\
+\texttt{ift\_h} & IFT herbicides & \texttt{DECIMAL(8,4)} & MESURE du fait PRESSION\_AGRICOLE & 21.18 & 67 664 & PQ-20 \\
+\texttt{ift\_t\_hh} & IFT total hors herbicides & \texttt{DECIMAL(8,4)} & MESURE du fait PRESSION\_AGRICOLE & 21.18 & 67 775 & PQ-20 \\
+\texttt{ift\_HHhbc} & IFT hors herbicides et hors biocontrole & \texttt{DECIMAL(8,4)} & MESURE du fait PRESSION\_AGRICOLE & 21.18 & 67 820 & PQ-21 \\
+\texttt{IFTbc} & IFT des produits de biocontrole & \texttt{DECIMAL(8,4)} & MESURE du fait PRESSION\_AGRICOLE & 21.18 & 59 839 & PQ-22 \\
+\texttt{ift\_t\_hbc\_dif} & Variation de ift\_t\_hbc entre les deux millesimes & \texttt{DECIMAL(8,4)} & MESURE semi-additive du fait PRESSION\_AGRICOLE & 52.94 & 40 590 & PQ-23 \\
+\texttt{ift\_h\_dif} & Variation de l IFT herbicides & \texttt{DECIMAL(8,4)} & MESURE semi-additive & 52.94 & 40 499 & PQ-23 \\
+\texttt{ift\_HHhbc\_dif} & Variation de l IFT hors herbicides hors biocontrole & \texttt{DECIMAL(8,4)} & MESURE semi-additive & 52.94 & 40 592 & PQ-23 \\
+\texttt{IFTbc\_dif} & Variation de l IFT biocontrole & \texttt{DECIMAL(8,4)} & MESURE semi-additive & 52.94 & 34 308 & PQ-23 \\
+\texttt{sau\_dif} & Variation de la SAU & \texttt{DECIMAL(12,4)} & MESURE semi-additive & 52.94 & 32 326 & PQ-23 \\
+\texttt{p\_sau\_dif} & Variation de la part de SAU & \texttt{DECIMAL(6,3)} & MESURE semi-additive & 52.94 & 41 557 & PQ-23 \\
+\texttt{p\_bio\_dif} & Variation de la part de bio & \texttt{DECIMAL(6,3)} & MESURE semi-additive & 52.94 & 30 572 & PQ-23 \\
+\texttt{p\_bc\_dif} & Variation de la part de biocontrole & \texttt{DECIMAL(6,3)} & MESURE semi-additive & 52.94 & 37 837 & PQ-23 \\
+\texttt{c\_maj} & Code de la culture majoritaire de la commune & \texttt{VARCHAR(5)} & CLE de DIM\_CULTURE & 21.18 & 87 & --- \\
+\texttt{lib\_c\_maj} & Libelle de la culture majoritaire & \texttt{VARCHAR(50)} & Attribut de DIM\_CULTURE & 20.33 & 81 & PQ-10 \\
+\texttt{cult\_ifthbc} & Code de la culture contribuant le plus a l IFT hors biocontrole & \texttt{VARCHAR(6)} & Attribut de DIM\_CULTURE & 21.18 & 58 & PQ-21 \\
+\texttt{lib\_c\_hbc} & Libelle de cette culture & \texttt{VARCHAR(40)} & Attribut de DIM\_CULTURE & 20.33 & 50 & --- \\
+\texttt{cult\_ifth} & Code de la culture contribuant le plus a l IFT herbicides & \texttt{VARCHAR(6)} & Attribut de DIM\_CULTURE & 20.33 & 55 & PQ-21 \\
+\texttt{lib\_c\_h} & Libelle de cette culture & \texttt{VARCHAR(40)} & Attribut de DIM\_CULTURE & 20.33 & 47 & --- \\
+\texttt{couleur\_t\_hbc} & Code couleur hexadecimal pour la cartographie & \texttt{CHAR(7)} & Rejete (donnee de presentation) & 0.00 & 11 & PQ-24 \\
+\texttt{couleur\_h} & Code couleur hexadecimal pour la cartographie & \texttt{CHAR(7)} & Rejete (donnee de presentation) & 0.00 & 7 & PQ-24 \\
+\texttt{couleur\_bio} & Code couleur hexadecimal pour la cartographie & \texttt{CHAR(7)} & Rejete (donnee de presentation) & 0.00 & 12 & PQ-24 \\
+\texttt{id} & Identifiant technique de la commune & \texttt{VARCHAR(24)} & Rejete (identifiant interne) & 20.33 & 28 579 & PQ-12 \\
+\texttt{id\_admin\_commune} & Identifiant administratif interne & \texttt{VARCHAR(24)} & Rejete (identifiant interne) & 14.42 & 28 410 & PQ-12 \\
+\end{longtable}}
+

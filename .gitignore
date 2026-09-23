@@ -14,3 +14,10 @@ venv/
 .env
 .env.*
 !.env.example
+
+# Archives de donnees brutes (plusieurs Go)
+/DATAS/*.zip
+
+# Fichiers de session R locaux
+*.Rhistory
+*.RData

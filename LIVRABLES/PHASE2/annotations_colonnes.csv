@@ -1,0 +1,88 @@
+table;colonne;libelle;type_cible;role_dw;regle_transformation;pq
+DIS_COM_UDI;inseecommune;Code INSEE de la commune desservie par le reseau;VARCHAR(5);Cle etrangere -> DIM_GEOGRAPHIE;Conserver en texte (zeros de tete, 2A/2B). Ne jamais caster en entier.;PQ-05
+DIS_COM_UDI;nomcommune;Nom de la commune;VARCHAR(50);Attribut degrade de DIM_GEOGRAPHIE;Trim + normalisation de casse. Ne pas utiliser comme cle (homonymes).;PQ-09
+DIS_COM_UDI;quartier;Quartier ou zone desservie;VARCHAR(80);Rejete (qualite insuffisante);Texte libre non normalise. Mapper le tiret vers NULL. Non retenu dans le DW.;PQ-09
+DIS_COM_UDI;cdreseau;Code de l unite de distribution (UDI);VARCHAR(9);Cle etrangere -> DIM_RESEAU_UDI;Cle de la table pont COMMUNE x UDI (arc multiple).;
+DIS_COM_UDI;nomreseau;Libelle de l UDI;VARCHAR(80);Attribut de DIM_RESEAU_UDI;Libelle variable dans le temps -> retenir le plus recent (SCD type 1).;PQ-10
+DIS_COM_UDI;debutalim;Date de debut d alimentation de la commune par l UDI;DATE;Attribut de la table pont;Caster en DATE. La valeur 1900-01-01 est une sentinelle inconnu -> NULL.;PQ-06
+DIS_PLV;cddept;Code departement du prelevement;VARCHAR(3);Cle etrangere -> DIM_GEOGRAPHIE (niveau departement);Format 001 a 976 plus 02A et 02B. Derivable depuis inseecommuneprinc.;PQ-05
+DIS_PLV;cdreseau;Code de l UDI prelevee;VARCHAR(9);Cle etrangere -> DIM_RESEAU_UDI;Integrite referentielle avec COM_UDI verifiee : zero orphelin.;
+DIS_PLV;inseecommuneprinc;Code INSEE de la commune principale de l UDI;VARCHAR(5);Cle etrangere -> DIM_GEOGRAPHIE;Commune PRINCIPALE de l UDI, pas la commune du point de prelevement.;PQ-07
+DIS_PLV;nomcommuneprinc;Nom de la commune principale;VARCHAR(50);Attribut degrade;Trim. Non retenu comme cle.;PQ-09
+DIS_PLV;cdreseauamont;Code du reseau amont (production ou transport);VARCHAR(9);Attribut de la table pont RESEAU_AMONT;27,4 pourcent des lignes pointent vers un code absent de COM_UDI.;PQ-02
+DIS_PLV;nomreseauamont;Libelle du reseau amont;VARCHAR(70);Attribut de la table pont RESEAU_AMONT;Trim.;PQ-10
+DIS_PLV;pourcentdebit;Part du debit apportee par le reseau amont;DECIMAL(5,2);Poids de l arc multiple RESEAU_AMONT;Texte 100 % -> retirer le signe et caster. Des valeurs 0 % existent (25 477).;PQ-03
+DIS_PLV;referenceprel;Identifiant national du prelevement;VARCHAR(11);CLE DEGENEREE du fait PRELEVEMENT;Cle de dedoublonnage. Texte dans PLV, numerique dans RESULT -> forcer VARCHAR.;PQ-01
+DIS_PLV;dateprel;Date du prelevement;DATE;Cle etrangere -> DIM_TEMPS;Caster en DATE. Aucune valeur manquante, plage 2016-01-02 a 2025-12-31.;
+DIS_PLV;heureprel;Heure du prelevement;TIME;Attribut de DIM_TEMPS (optionnel);Format NNhNN non respecte sur 5 941 lignes. Parser avec table de rejet.;PQ-04
+DIS_PLV;conclusionprel;Conclusion sanitaire redigee par l ARS;TEXT;Source de DIM_CONCLUSION (apres classification);Texte libre jusqu a 3 782 caracteres, 140 609 variantes. Classifier en 5 a 8 modalites.;PQ-08
+DIS_PLV;ugelib;Libelle de l unite de gestion et d exploitation;VARCHAR(40);Attribut de DIM_RESEAU_UDI;44 560 lignes avec espaces ou tabulations parasites -> trim obligatoire.;PQ-10
+DIS_PLV;distrlib;Libelle du distributeur;VARCHAR(70);Niveau hierarchique de DIM_RESEAU_UDI;Trim et deduplication des raisons sociales (7 047 variantes).;PQ-10
+DIS_PLV;moalib;Libelle du maitre d ouvrage;VARCHAR(70);Niveau hierarchique de DIM_RESEAU_UDI;Trim et deduplication (8 804 variantes).;PQ-10
+DIS_PLV;plvconformitebacterio;Conformite aux limites de qualite bacteriologiques;CHAR(1);MESURE (flag) du fait PRELEVEMENT;Codes C/N/S. Mesure = 1 si N, 0 si C, NULL sinon. S exclu du denominateur.;PQ-11
+DIS_PLV;plvconformitechimique;Conformite aux limites de qualite chimiques;CHAR(1);MESURE (flag) du fait PRELEVEMENT;Codes C/N/D/S. D = derogation (3 906 lignes) : traitement a decider et a tracer.;PQ-11
+DIS_PLV;plvconformitereferencebact;Conformite aux references de qualite bacteriologiques;CHAR(1);MESURE (flag) du fait PRELEVEMENT;Reference de qualite = seuil indicatif, ne vaut pas non-conformite reglementaire.;PQ-11
+DIS_PLV;plvconformitereferencechim;Conformite aux references de qualite chimiques;CHAR(1);MESURE (flag) du fait PRELEVEMENT;Idem colonne precedente.;PQ-11
+DIS_RESULT;cddept;Code departement;VARCHAR(3);Cle etrangere -> DIM_GEOGRAPHIE;Redondant avec PLV : utiliser celui de PLV apres jointure.;PQ-05
+DIS_RESULT;referenceprel;Identifiant du prelevement parent;VARCHAR(11);Cle etrangere -> fait PRELEVEMENT;Lu en entier 64 bits par defaut -> forcer VARCHAR sinon jointure fausse en silence.;PQ-01
+DIS_RESULT;cdparametresiseeaux;Code SISE-Eaux du parametre;VARCHAR(9);CLE de DIM_PARAMETRE;Cle naturelle retenue (1 769 modalites), plus fine que cdparametre.;
+DIS_RESULT;cdparametre;Code parametre du referentiel national;VARCHAR(5);Attribut de DIM_PARAMETRE;1 628 modalites et 0,10 pourcent de valeurs nulles -> non retenu comme cle.;PQ-12
+DIS_RESULT;libmajparametre;Libelle du parametre en majuscules;VARCHAR(70);Attribut de DIM_PARAMETRE;Redondant avec libminparametre. Ne charger qu un seul libelle.;
+DIS_RESULT;libminparametre;Libelle du parametre;VARCHAR(70);Attribut de DIM_PARAMETRE;Libelle retenu. 1 914 variantes pour 1 769 codes -> SCD type 1.;PQ-10
+DIS_RESULT;libwebparametre;Libelle web du parametre;VARCHAR(35);Rejete (colonne vide);Vide sur la quasi-totalite des lignes. A ne pas charger.;PQ-12
+DIS_RESULT;qualitparam;Indicateur de parametre qualitatif;CHAR(1);Attribut de DIM_PARAMETRE;O = resultat qualitatif (odeur, aspect) : valtraduite non exploitable.;PQ-13
+DIS_RESULT;insituana;Analyse realisee in situ (T) ou en laboratoire (L);CHAR(1);Attribut de DIM_PARAMETRE;Conserver tel quel.;
+DIS_RESULT;rqana;Resultat brut rendu par le laboratoire;VARCHAR(35);Attribut technique du fait ANALYSE;Mixte : numerique, censure, texte. Valeurs corrompues observees. Ne pas caster directement.;PQ-14
+DIS_RESULT;cdunitereferencesiseeaux;Unite de mesure SISE-Eaux;VARCHAR(24);Attribut de DIM_PARAMETRE;72 modalites avec doublons de casse -> normaliser.;PQ-10
+DIS_RESULT;cdunitereference;Code unite du referentiel national;VARCHAR(3);Attribut de DIM_PARAMETRE;63 modalites. Conserver comme code technique.;
+DIS_RESULT;limitequal;Limite de qualite reglementaire (seuil opposable);VARCHAR(28);Source des attributs de DIM_SEUIL;Texte a parser en operateur, borne min, borne max, unite. Absent sur 43,70 pourcent.;PQ-15
+DIS_RESULT;refqual;Reference de qualite (seuil indicatif);VARCHAR(21);Source des attributs de DIM_SEUIL;Idem, avec des intervalles a deux bornes. Absent sur 80,28 pourcent.;PQ-15
+DIS_RESULT;valtraduite;Valeur numerique normalisee dans l unite de reference;DECIMAL(18,6);MESURE du fait ANALYSE;Vaut 0 pour tous les resultats censures. Ne jamais moyenner sans traiter la censure.;PQ-16
+DIS_RESULT;casparam;Numero CAS de la substance;VARCHAR(12);Attribut de DIM_PARAMETRE;Cle de rapprochement avec les referentiels pesticides externes. Absent sur 42,01 pourcent.;
+DIS_RESULT;referenceanl;Identifiant de l analyse (laboratoire);VARCHAR(11);Cle degeneree du fait ANALYSE;Absent sur 11,73 pourcent -> cle primaire = referenceprel + cdparametresiseeaux.;PQ-12
+IFT_SOLAGRO;insee_com;Code INSEE de la commune;VARCHAR(5);Cle etrangere -> DIM_GEOGRAPHIE;Cle de jointure avec SISE-Eaux. Taux de rapprochement mesure : 99,6 pourcent.;PQ-05
+IFT_SOLAGRO;year;Annee de reference (2020, 2021, 2022);SMALLINT;Cle etrangere -> DIM_TEMPS (niveau annee);2021 ne couvre que 19 587 communes contre 34 806 : annee partielle.;PQ-17
+IFT_SOLAGRO;nom;Nom de la commune;VARCHAR(50);Attribut degrade;Trim. Non retenu comme cle.;PQ-09
+IFT_SOLAGRO;nom_m;Nom de la commune en majuscules;VARCHAR(50);Rejete (redondant);Doublon de nom. Ne pas charger.;PQ-12
+IFT_SOLAGRO;insee_dep;Code departement;VARCHAR(2);Niveau DIM_GEOGRAPHIE;Format a 2 caracteres cote Solagro contre 3 cote SISE-Eaux : harmonisation obligatoire.;PQ-18
+IFT_SOLAGRO;nom_dep;Nom du departement;VARCHAR(30);Attribut de DIM_GEOGRAPHIE;Source de reference retenue pour le libelle departement.;
+IFT_SOLAGRO;insee_reg;Code region (decoupage post-2016);VARCHAR(2);Niveau DIM_GEOGRAPHIE;Retenu comme niveau region du DW.;
+IFT_SOLAGRO;nom_reg;Nom de la region;VARCHAR(30);Attribut de DIM_GEOGRAPHIE;Source de reference retenue pour le libelle region.;
+IFT_SOLAGRO;insee_reg_ancien;Code region (decoupage pre-2016);VARCHAR(2);Attribut historique de DIM_GEOGRAPHIE;Coexistence de deux decoupages -> hierarchie geographique temporellement variable.;PQ-19
+IFT_SOLAGRO;siren_epci;Code SIREN de l EPCI de rattachement;VARCHAR(9);Niveau optionnel de DIM_GEOGRAPHIE;Sentinelle NR sur 10 lignes -> NULL.;PQ-06
+IFT_SOLAGRO;code_bv;Code du bassin de vie;VARCHAR(3);Niveau optionnel de DIM_GEOGRAPHIE;Codes BV1 a BV9. Axe d analyse complementaire au departement.;
+IFT_SOLAGRO;population;Population communale;INTEGER;MESURE du fait PRESSION_AGRICOLE;Stocke en decimal dans la source -> arrondir. Sert a ponderer les indicateurs.;
+IFT_SOLAGRO;statut;Statut administratif de la commune;VARCHAR(20);Attribut de DIM_GEOGRAPHIE;Commune simple, Sous-prefecture, Capitale d etat. NULL sur 12 865 lignes.;PQ-06
+IFT_SOLAGRO;insee_can;Code canton;VARCHAR(2);Rejete (qualite insuffisante);Sentinelle NR sur 119 lignes, granularite non utilisee dans le workload.;PQ-06
+IFT_SOLAGRO;insee_arr;Code arrondissement;VARCHAR(2);Rejete (granularite non utilisee);Non retenu dans le DW.;
+IFT_SOLAGRO;surf_com_ha;Surface communale totale en hectares;DECIMAL(12,4);MESURE du fait PRESSION_AGRICOLE;Denominateur de p_sau. Caster en decimal.;
+IFT_SOLAGRO;sau;Surface agricole utile en hectares;DECIMAL(12,4);MESURE du fait PRESSION_AGRICOLE;Absent quand la commune n a pas de SAU significative : manquant legitime, ne pas imputer.;PQ-20
+IFT_SOLAGRO;sau_bio_0;Surface agricole conduite en agriculture biologique (ha);DECIMAL(12,4);MESURE du fait PRESSION_AGRICOLE;Numerateur de p_bio.;PQ-20
+IFT_SOLAGRO;p_sau;Part de la SAU dans la surface communale (pourcent);DECIMAL(6,3);MESURE du fait PRESSION_AGRICOLE;Indicateur d intensite agricole. Variable explicative centrale des besoins ML.;PQ-20
+IFT_SOLAGRO;p_bio;Part de la SAU en agriculture biologique (pourcent);DECIMAL(6,3);MESURE du fait PRESSION_AGRICOLE;Variable explicative. Manquant correle a sau.;PQ-20
+IFT_SOLAGRO;p_bc;Part des traitements relevant du biocontrole (pourcent);DECIMAL(6,3);MESURE du fait PRESSION_AGRICOLE;Definition a confirmer dans le guide methodologique Solagro.;PQ-21
+IFT_SOLAGRO;ift_t;Indice de frequence de traitement total;DECIMAL(8,4);MESURE du fait PRESSION_AGRICOLE;Mesure principale de l axe pression agricole.;PQ-20
+IFT_SOLAGRO;ift_t_hbc;IFT total hors produits de biocontrole;DECIMAL(8,4);MESURE du fait PRESSION_AGRICOLE;Mesure recommandee pour l analyse de pression chimique de synthese.;PQ-21
+IFT_SOLAGRO;ift_h;IFT herbicides;DECIMAL(8,4);MESURE du fait PRESSION_AGRICOLE;Famille la plus susceptible d etre retrouvee dans les eaux distribuees.;PQ-20
+IFT_SOLAGRO;ift_t_hh;IFT total hors herbicides;DECIMAL(8,4);MESURE du fait PRESSION_AGRICOLE;Complement de ift_h pour la comparaison par famille.;PQ-20
+IFT_SOLAGRO;ift_HHhbc;IFT hors herbicides et hors biocontrole;DECIMAL(8,4);MESURE du fait PRESSION_AGRICOLE;Definition a confirmer dans le guide Solagro.;PQ-21
+IFT_SOLAGRO;IFTbc;IFT des produits de biocontrole;DECIMAL(8,4);MESURE du fait PRESSION_AGRICOLE;Nommage en majuscules incoherent avec le reste du fichier -> renommer ift_bc.;PQ-22
+IFT_SOLAGRO;ift_t_hbc_dif;Variation de ift_t_hbc entre les deux millesimes;DECIMAL(8,4);MESURE semi-additive du fait PRESSION_AGRICOLE;Renseignee uniquement sur le millesime 2022 : absente sur 52,94 pourcent des lignes.;PQ-23
+IFT_SOLAGRO;ift_h_dif;Variation de l IFT herbicides;DECIMAL(8,4);MESURE semi-additive;Idem : uniquement sur 2022.;PQ-23
+IFT_SOLAGRO;ift_HHhbc_dif;Variation de l IFT hors herbicides hors biocontrole;DECIMAL(8,4);MESURE semi-additive;Idem : uniquement sur 2022.;PQ-23
+IFT_SOLAGRO;IFTbc_dif;Variation de l IFT biocontrole;DECIMAL(8,4);MESURE semi-additive;Idem : uniquement sur 2022.;PQ-23
+IFT_SOLAGRO;sau_dif;Variation de la SAU;DECIMAL(12,4);MESURE semi-additive;Idem : uniquement sur 2022.;PQ-23
+IFT_SOLAGRO;p_sau_dif;Variation de la part de SAU;DECIMAL(6,3);MESURE semi-additive;Idem : uniquement sur 2022.;PQ-23
+IFT_SOLAGRO;p_bio_dif;Variation de la part de bio;DECIMAL(6,3);MESURE semi-additive;Idem : uniquement sur 2022.;PQ-23
+IFT_SOLAGRO;p_bc_dif;Variation de la part de biocontrole;DECIMAL(6,3);MESURE semi-additive;Idem : uniquement sur 2022.;PQ-23
+IFT_SOLAGRO;c_maj;Code de la culture majoritaire de la commune;VARCHAR(5);CLE de DIM_CULTURE;87 modalites. Axe d analyse du fait PRESSION_AGRICOLE.;
+IFT_SOLAGRO;lib_c_maj;Libelle de la culture majoritaire;VARCHAR(50);Attribut de DIM_CULTURE;81 libelles pour 87 codes -> verifier la table de correspondance.;PQ-10
+IFT_SOLAGRO;cult_ifthbc;Code de la culture contribuant le plus a l IFT hors biocontrole;VARCHAR(6);Attribut de DIM_CULTURE;Definition a confirmer dans le guide Solagro.;PQ-21
+IFT_SOLAGRO;lib_c_hbc;Libelle de cette culture;VARCHAR(40);Attribut de DIM_CULTURE;Trim.;
+IFT_SOLAGRO;cult_ifth;Code de la culture contribuant le plus a l IFT herbicides;VARCHAR(6);Attribut de DIM_CULTURE;Definition a confirmer dans le guide Solagro.;PQ-21
+IFT_SOLAGRO;lib_c_h;Libelle de cette culture;VARCHAR(40);Attribut de DIM_CULTURE;Trim.;
+IFT_SOLAGRO;couleur_t_hbc;Code couleur hexadecimal pour la cartographie;CHAR(7);Rejete (donnee de presentation);Artefact de la carte Solagro, sans valeur analytique. Ne pas charger.;PQ-24
+IFT_SOLAGRO;couleur_h;Code couleur hexadecimal pour la cartographie;CHAR(7);Rejete (donnee de presentation);Idem.;PQ-24
+IFT_SOLAGRO;couleur_bio;Code couleur hexadecimal pour la cartographie;CHAR(7);Rejete (donnee de presentation);Idem.;PQ-24
+IFT_SOLAGRO;id;Identifiant technique de la commune;VARCHAR(24);Rejete (identifiant interne);Remplace par la cle de substitution du DW.;PQ-12
+IFT_SOLAGRO;id_admin_commune;Identifiant administratif interne;VARCHAR(24);Rejete (identifiant interne);Remplace par la cle de substitution du DW.;PQ-12

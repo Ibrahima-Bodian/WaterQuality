@@ -1,0 +1,437 @@
+================================================================================
+  COMPRENDRE LES DONNEES DU PROJET QUALITE DE L'EAU
+  Projet M1 DS4SC - Université de Tours - 2026-2027
+================================================================================
+
+L'HISTOIRE EN UNE PHRASE :
+En France, des agents sanitaires vont dans des communes, prennent un verre
+d'eau du robinet, l'envoient au labo, et le labo mesure des dizaines de
+paramètres. Ces résultats sont stockés dans 3 fichiers. Un 4e fichier
+(Solagro) donne l'usage des pesticides par commune.
+
+
+================================================================================
+  FICHIER 1 - DIS_COM_UDI
+  "Qui fournit l'eau à quelle commune ?"
+================================================================================
+
+C'est l'annuaire. Il fait le lien entre une commune et le réseau qui
+l'alimente en eau. Une commune peut être alimentée par plusieurs réseaux.
+Un réseau peut alimenter plusieurs communes.
+
+COLONNES :
+
+  inseecommune     Code INSEE de la commune (5 chiffres)
+                   Exemple : 01007
+
+  nomcommune       Nom de la commune
+                   Exemple : AMBRONAY
+
+  quartier         Quartier si applicable
+                   Souvent vide
+
+  cdreseau         Code du réseau de distribution d'eau
+                   Exemple : 001000003
+
+  nomreseau        Nom du réseau
+                   Exemple : SIE REGION D'AMBERIEU-EN-BUGEY
+
+  debutalim        Date de début d'alimentation par ce réseau
+                   Exemple : 2010-09-07
+
+
+================================================================================
+  FICHIER 2 - DIS_PLV
+  "Quand est-ce qu'on a prélevé de l'eau, et c'était conforme ou pas ?"
+================================================================================
+
+C'est le registre des prélèvements. Chaque ligne = un agent sanitaire qui
+est allé prendre un échantillon d'eau dans un réseau. C'est le fichier
+principal pour nos analyses, environ 400 000 lignes par an.
+
+COLONNES :
+
+  cddept                       Code département
+                               Exemple : 001
+
+  cdreseau                     Code du réseau où on a prélevé
+                               Exemple : 001000003
+                               -> lien vers DIS_COM_UDI.cdreseau
+
+  inseecommuneprinc            Code INSEE de la commune principale du réseau
+                               Exemple : 01007
+
+  nomcommuneprinc              Nom de cette commune
+                               Exemple : AMBRONAY
+
+  cdreseauamont                Code du réseau qui alimente ce réseau
+                               Exemple : 001001304
+                               SOUVENT VIDE - un réseau n'a pas toujours
+                               de réseau en amont
+
+  nomreseauamont               Nom du réseau amont
+                               Exemple : TTP (CLG) AMBRONAY
+                               SOUVENT VIDE
+
+  pourcentdebit                Part du débit venant du réseau amont
+                               Exemple : 100 %
+                               SOUVENT VIDE
+
+  referenceprel                IDENTIFIANT UNIQUE DU PRELEVEMENT
+                               Exemple : 00100087319
+                               C'EST LA CLE DE JOINTURE avec DIS_RESULT
+
+  dateprel                     Date du prélèvement
+                               Exemple : 2016-02-22
+
+  heureprel                    Heure du prélèvement
+                               Exemple : 11h07
+
+  conclusionprel               Conclusion en texte libre
+                               Exemple : "Eau d'alimentation conforme
+                               aux exigences de qualité en vigueur pour
+                               l'ensemble des paramètres mesurés."
+
+  ugelib                       Unité de Gestion de l'Eau
+                               C'est l'organisme qui gère le service d'eau
+                               Exemple : SI REGION D'AMBERIEU-EN-BUGEY
+
+  distrlib                     Distributeur de l'eau
+                               C'est celui qui distribue concrètement l'eau
+                               Exemple : SIE REGION D'AMBERIEU-EN-BUGEY
+
+  moalib                       Maître d'Ouvrage
+                               C'est celui qui est responsable du réseau
+                               Exemple : SIE REGION D'AMBERIEU-EN-BUGEY
+
+  plvconformitebacterio        L'eau est-elle conforme bactériologiquement ?
+                               Valeurs possibles : C, N, S, D
+
+  plvconformitechimique        L'eau est-elle conforme chimiquement ?
+                               Valeurs possibles : C, N, S, D
+
+  plvconformitereferencebact   Conformité bactério par rapport au texte
+                               réglementaire de référence
+                               Valeurs possibles : C, N, S, D
+
+  plvconformitereferencechim   Conformité chimique par rapport au texte
+                               réglementaire de référence
+                               Valeurs possibles : C, N, S, D
+
+
+LES 4 VALEURS DE CONFORMITE :
+
+  C = Conforme
+      Tout va bien, les seuils sont respectés.
+
+  N = Non conforme
+      Au moins un paramètre dépasse la limite autorisée.
+
+  S = Sans objet
+      Ce type de paramètre n'a pas été testé pour ce prélèvement.
+
+  D = Dérogation
+      Il y a un dépassement mais une autorisation exceptionnelle
+      a été accordée (temporairement).
+
+
+POURQUOI 4 COLONNES DE CONFORMITE ET PAS 2 ?
+
+  Les deux premières (plvconformitebacterio et plvconformitechimique)
+  donnent le résultat du prélèvement.
+
+  Les deux suivantes (plvconformitereferencebact et
+  plvconformitereferencechim) comparent ce résultat au texte
+  réglementaire officiel de référence.
+
+  En pratique elles sont souvent identiques, mais pas toujours.
+  Un prélèvement peut être non conforme sur un seuil mais conforme
+  par rapport à la référence si une dérogation est en cours.
+
+
+================================================================================
+  FICHIER 3 - DIS_RESULT
+  "Qu'est-ce qu'on a mesuré exactement dans cet échantillon ?"
+================================================================================
+
+C'est le détail des analyses de laboratoire. Pour chaque prélèvement,
+le labo mesure des dizaines de paramètres. Chaque mesure = une ligne.
+
+C'est le fichier le plus volumineux : plus d'un million de lignes par an.
+Il ne rentre pas dans Excel.
+
+COLONNES :
+
+  cddept                       Code département
+                               Exemple : 1
+                               ATTENTION : ici pas de zéro devant (1 au
+                               lieu de 001). Il faut harmoniser.
+
+  referenceprel                Lien vers le prélèvement dans DIS_PLV
+                               Exemple : 00100087319
+                               C'EST LA CLE DE JOINTURE avec DIS_PLV
+
+  cdparametresiseeaux          Code interne SISE du paramètre
+                               Exemple : ASP, BSIR, CDT25
+
+  cdparametre                  Code officiel du paramètre
+                               Exemple : 6489, 1042, 1303
+
+  libmajparametre              Nom du paramètre EN MAJUSCULES
+                               Exemple : ASPECT (QUALITATIF)
+                               Exemple : NITRATES (EN NO3)
+                               Exemple : ATRAZINE
+
+  libminparametre              Nom du paramètre en minuscules
+                               Exemple : Aspect (qualitatif)
+                               Exemple : Nitrates (en NO3)
+
+  libwebparametre              Nom pour affichage web
+                               Souvent vide
+
+  qualitparam                  Type du paramètre
+                               O = paramètre obligatoire
+                               N = paramètre non obligatoire
+
+  insituana                    Où l'analyse a été faite
+                               L = en laboratoire
+                               T = sur le terrain (sur place)
+
+  rqana                        Résultat brut de l'analyse tel que noté
+                               Exemple : 560
+                               Exemple : <1
+                               Exemple : Aspect normal
+                               C'est du texte, pas toujours un nombre
+
+  cdunitereferencesiseeaux     Code de l'unité dans le système SISE
+                               Exemple : 147, 226
+
+  cdunitereference             Unité de mesure en clair
+                               Exemple : µS/cm
+                               Exemple : mg/L
+                               Exemple : n/(100mL)
+
+  limitequal                   Limite de qualité réglementaire
+                               Exemple : >=200 et <=1100 µS/cm
+                               Exemple : <=0 n/(100mL)
+                               C'est le seuil à ne pas dépasser.
+                               ATTENTION : c'est du texte, pas un nombre.
+
+  refqual                      Référence de qualité
+                               Autre formulation du seuil réglementaire
+                               Parfois vide
+
+  valtraduite                  VALEUR NUMERIQUE TRADUITE
+                               Exemple : 560.000000
+                               Exemple : 0.000000
+                               C'est la valeur qu'on utilise pour comparer
+                               avec limitequal. C'est un nombre.
+
+  casparam                     Cas particulier du paramètre
+                               Code technique, rarement utile
+
+  referenceanl                 Identifiant unique de l'analyse
+                               Une mesure précise dans un labo
+
+
+PARAMETRES LES PLUS FREQUENTS DANS DIS_RESULT (données 2016) :
+
+  Paramètre                                    Nombre de mesures
+  -----------------------------------------------  --------
+  PH                                               35 509
+  TEMPERATURE DE L'EAU                              23 673
+  ESCHERICHIA COLI /100ML                           23 397
+  ENTEROCOQUES /100ML                               23 397
+  CHLORE TOTAL                                      23 342
+  BACTERIES COLIFORMES /100ML                       23 277
+  ASPECT (QUALITATIF)                               22 873
+  ODEUR (QUALITATIF)                                22 838
+  CHLORE LIBRE                                      22 800
+  CONDUCTIVITE A 25°C                               22 588
+  AMMONIUM (EN NH4)                                 22 574
+  NITRATES (EN NO3)                                 14 139
+
+  PARAMETRES PESTICIDES retrouvés :
+  ATRAZINE                                           1 490
+  ATRAZINE DESETHYL                                  1 488
+  GLYPHOSATE                                         1 150
+  SIMAZINE                                           1 473
+  DIURON                                             1 254
+  CHLORTOLURON                                       1 254
+  METOLACHLORE                                       1 016
+  TOTAL DES PESTICIDES ANALYSES                      1 224
+
+
+================================================================================
+  FICHIER 4 - SOLAGRO (Pesticides en agriculture)
+  "Quelle quantité de pesticides est utilisée dans cette commune ?"
+================================================================================
+
+Données produites par l'organisme Solagro. Une ligne par commune et par
+année. Couvre 2020, 2021 et 2022.
+
+COLONNES PRINCIPALES :
+
+  insee_com        Code INSEE de la commune (5 chiffres)
+                   Exemple : 01001
+
+  year             Année
+                   Exemple : 2020, 2021, 2022
+
+  nom              Nom de la commune
+                   Exemple : L'Abergement-Clémenciat
+
+  insee_dep        Code département (sans zéro devant)
+                   Exemple : 1
+
+  nom_dep          Nom du département
+                   Exemple : Ain
+
+  insee_reg        Code région
+                   Exemple : 84
+
+  nom_reg          Nom de la région
+                   Exemple : Auvergne-Rhône-Alpes
+
+  population       Population de la commune
+                   Exemple : 832
+
+  sau              Surface Agricole Utile en hectares
+                   C'est la surface réellement cultivée
+                   Exemple : 929.78
+
+  p_sau            Part de la commune qui est agricole (en %)
+                   Exemple : 59.52
+
+  p_bio            Part de l'agriculture en bio (en %)
+                   Exemple : 3.24
+                   Parfois vide
+
+  ift_t            IFT TOTAL - tous pesticides confondus
+                   Nombre moyen de traitements par hectare
+                   Exemple : 2.20
+                   C'est l'indicateur principal de pression pesticide
+
+  ift_h            IFT HERBICIDES uniquement
+                   Exemple : 0.99
+
+  ift_t_hh         IFT HORS HERBICIDES (insecticides + fongicides)
+                   Exemple : 1.21
+
+  IFTbc            IFT sur les grandes cultures
+                   Exemple : 1.19
+
+  p_bc             Part des grandes cultures en %
+                   Exemple : 0.63
+
+  c_maj            Code de la culture majoritaire dans la commune
+                   Exemple : MIS = Maïs, PPH = Prairie permanente
+
+  lib_c_maj        Libellé de cette culture
+                   Exemple : Maïs, Prairie permanente
+
+  cult_ifthbc      Code de la culture avec le plus fort IFT
+                   Exemple : BTH = Blé tendre
+
+  lib_c_hbc        Libellé de cette culture
+                   Exemple : Blé tendre
+
+  ift_t_hbc_dif    Variation de l'IFT entre les deux années
+                   (utilisé pour l'axe 3 - évolution temporelle)
+
+
+QU'EST-CE QUE L'IFT ?
+
+  L'Indice de Fréquence de Traitement mesure l'intensité d'utilisation
+  des pesticides. Un IFT de 3 veut dire qu'en moyenne, chaque hectare
+  a reçu 3 doses complètes de produit phytosanitaire sur la campagne.
+
+  IFT = 0     Aucun traitement (bio ou prairie naturelle)
+  IFT < 1     Très faible usage
+  IFT 1-3     Usage modéré
+  IFT > 3     Usage intensif
+
+
+================================================================================
+  LIENS ENTRE LES 4 FICHIERS
+================================================================================
+
+
+  DIS_COM_UDI                DIS_PLV                  DIS_RESULT
+  (annuaire)                 (prélèvements)           (mesures labo)
+  +-----------------+        +------------------+     +------------------+
+  | inseecommune    |        | referenceprel  --|---->| referenceprel    |
+  | nomcommune      |        | cdreseau         |     | libmajparametre  |
+  | cdreseau      --|------->| inseecommuneprinc|     | valtraduite      |
+  | nomreseau       |        | dateprel         |     | limitequal       |
+  | debutalim       |        | plvconformite... |     | cdunitereference |
+  +-----------------+        +------------------+     +------------------+
+                                    |
+                                    | via code département
+                                    | ou code commune INSEE
+                                    |
+                             +------------------+
+                             | SOLAGRO          |
+                             | (pesticides)     |
+                             | insee_com        |
+                             | ift_t, ift_h     |
+                             | sau, p_bio       |
+                             | population       |
+                             +------------------+
+
+
+JOINTURES CLES :
+
+  1. DIS_COM_UDI.cdreseau = DIS_PLV.cdreseau
+     Un réseau alimente une ou plusieurs communes.
+     On sait quelle commune est concernée par quel prélèvement.
+
+  2. DIS_PLV.referenceprel = DIS_RESULT.referenceprel
+     Un prélèvement a plusieurs résultats d'analyse (un par paramètre).
+     C'est une relation 1 vers N (un prélèvement, beaucoup de mesures).
+
+  3. DIS_PLV.cddept = SOLAGRO.insee_dep (après harmonisation)
+     Jointure au niveau département pour les axes 1 à 3.
+     ATTENTION : cddept = "001" dans PLV, insee_dep = "1" dans Solagro.
+     Il faut harmoniser (enlever les zéros ou en ajouter).
+
+  4. DIS_PLV.inseecommuneprinc = SOLAGRO.insee_com (après harmonisation)
+     Jointure au niveau commune pour l'axe 4.
+     ATTENTION : inseecommuneprinc = "01007" dans PLV,
+     insee_com = "1007" dans Solagro (parfois sans zéro).
+     Harmoniser en padding à 5 chiffres.
+
+
+================================================================================
+  PROBLEMES CONNUS A GERER AU NETTOYAGE
+================================================================================
+
+  1. CODES INSEE PAS AU MEME FORMAT
+     PLV : "01007" (avec zéro)
+     Solagro : "1007" (parfois sans zéro)
+     RESULT : département "1" au lieu de "001"
+     -> Tout mettre au même format avant les jointures
+
+  2. DIS_RESULT TROP GROS POUR EXCEL
+     Plus d'un million de lignes par an
+     -> Utiliser RStudio ou KNIME
+
+  3. COLONNES SOUVENT VIDES
+     cdreseauamont, nomreseauamont, pourcentdebit dans PLV
+     libwebparametre dans RESULT
+     p_bio dans Solagro (pas toujours renseigné)
+
+  4. LIMITEQUAL EST DU TEXTE PAS UN NOMBRE
+     Exemple : ">=200 et <=1100 µS/cm"
+     Pour comparer avec valtraduite il faut parser ce texte
+     et en extraire les bornes numériques
+
+  5. RQANA EST DU TEXTE
+     Exemple : "<1", "Aspect normal", "560"
+     La valeur numérique exploitable est dans valtraduite
+
+
+================================================================================
+  FIN DU DOCUMENT
+  Projet Qualité de l'eau - M1 DS4SC - 2026-2027
+================================================================================
